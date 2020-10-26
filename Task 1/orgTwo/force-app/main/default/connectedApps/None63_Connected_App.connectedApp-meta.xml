@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ConnectedApp xmlns="http://soap.sforce.com/2006/04/metadata">
+    <contactEmail>rulit.ivan@yandex.ru</contactEmail>
+    <label>None63 Connected App</label>
+    <oauthConfig>
+        <callbackUrl>https://none63-dev-ed.my.salesforce.com/services/authcallback/None9aAuthProvider
+https://none63-dev-ed.my.salesforce.com</callbackUrl>
+        <consumerKey>3MVG9VeAQy5y3BQV74AOB4U_GI7GaX0oundeMTlPMMhDPISgP6CqoYy1cslPKt3qyi3CqWRWcDLSxAakfy43w</consumerKey>
+        <isAdminApproved>false</isAdminApproved>
+        <isConsumerSecretOptional>false</isConsumerSecretOptional>
+        <isIntrospectAllTokens>false</isIntrospectAllTokens>
+        <scopes>Api</scopes>
+        <scopes>RefreshToken</scopes>
+    </oauthConfig>
+    <oauthPolicy>
+        <ipRelaxation>BYPASS</ipRelaxation>
+        <refreshTokenPolicy>infinite</refreshTokenPolicy>
+    </oauthPolicy>
+</ConnectedApp>
