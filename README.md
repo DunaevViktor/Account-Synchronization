@@ -1,5 +1,3 @@
-# ORG Two
-
 ### Task 1:
 
 It is necessary to implement synchronization of Accounts between two SF orgs.

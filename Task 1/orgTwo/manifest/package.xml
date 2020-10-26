@@ -44,5 +44,9 @@
         <members>*</members>
         <name>AuthProvider</name>
     </types>
+    <types>
+        <members>Account.MyExternal__c</members>
+        <name>CustomField</name>
+    </types>
     <version>50.0</version>
 </Package>
