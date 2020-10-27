@@ -44,7 +44,7 @@
         <members>*</members>
         <name>AuthProvider</name>
     </types>
-        <types>
+    <types>
         <members>Account.MyExternal__c</members>
         <name>CustomField</name>
     </types>
