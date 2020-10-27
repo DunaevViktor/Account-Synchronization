@@ -1,14 +1,13 @@
-trigger accountTrigger on Account (after insert, after update) {
+trigger accountTrigger on Account (after insert, after update, before delete) {
     if(Trigger.isInsert){
         for(Account account : Trigger.New) {
             if(account.MyExternal__c == null) {
                 RestClient.makeRequest(account.id);
             }
         }
-    }
-
-    if(Trigger.isUpdate){
+    } else if(Trigger.isUpdate){
         List<Id> idForUpdate = new List<Id>();
+        List<Id> idForDelete = new List<Id>();
         for (Account account: Trigger.new) {
             Account oldAccount = Trigger.oldMap.get(account.Id);
         
@@ -22,6 +21,10 @@ trigger accountTrigger on Account (after insert, after update) {
             if(account.FromApi__c) {
                 idForUpdate.add(account.Id);
             }
+
+            if(account.MyExternal__c == null) {
+                idForDelete.add(account.Id);
+            }
         }
         
         List<Account> accountForUpdate = new List<Account>();
@@ -32,5 +35,14 @@ trigger accountTrigger on Account (after insert, after update) {
         }
         
         update accountForUpdate;
+
+        List<Account> accountForDelete = [SELECT Name FROM Account WHERE Id IN :idForDelete];
+        delete accountForDelete;
+    } else if(Trigger.isDelete){
+        for(Account account: Trigger.old) {
+            if(account.MyExternal__c != null) {
+                RestClient.deleteRequest(account.MyExternal__c);
+            }
+        }
     }
 }

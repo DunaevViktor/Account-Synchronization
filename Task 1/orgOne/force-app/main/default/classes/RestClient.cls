@@ -28,4 +28,20 @@ public with sharing class RestClient {
         account.MyExternal__c = recordId;
         update account;  
     }
+
+    @future(callout = true)
+    public static void deleteRequest(String externalId) {
+
+        Account accountForUpdate = new Account(
+            MyExternal__c = null
+        );
+
+        Http http = new Http();
+        HttpRequest request = new HttpRequest();  
+        request.setEndpoint('callout:None9aApiNC/services/data/v49.0/sobjects/Account/' + externalId);  
+        request.setMethod('PATCH');    
+        request.setHeader('Content-Type', 'application/json;charset=UTF-8');
+        request.setBody(JSON.serialize(accountForUpdate)); 
+        HttpResponse response = http.send(request);
+    }
 }
