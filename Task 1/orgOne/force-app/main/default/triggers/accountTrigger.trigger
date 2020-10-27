@@ -2,7 +2,7 @@ trigger accountTrigger on Account (after insert, after update) {
     if(Trigger.isInsert){
         for(Account account : Trigger.New) {
             if(account.MyExternal__c == null) {
-                RestClient.makeInsertRequest(account.id);
+                RestClient.makeRequest(account.id);
             }
         }
     }
@@ -16,7 +16,7 @@ trigger accountTrigger on Account (after insert, after update) {
             //account.ShippingAddress != account.ShippingAddress
             if((account.Name != oldAccount.Name || account.AccountNumber != oldAccount.AccountNumber || 
             account.Phone != oldAccount.Phone) && !account.FromApi__c) {
-                RestClient.makeUpdateRequest(account.id);
+                RestClient.makeRequest(account.id);
             } 
         
             if(account.FromApi__c) {
