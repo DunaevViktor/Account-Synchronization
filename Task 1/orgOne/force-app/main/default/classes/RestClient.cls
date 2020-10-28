@@ -5,13 +5,8 @@ public with sharing class RestClient {
 
         String SEND_RECORD_ENDPOINT = 'callout:None9aApiNC/services/data/v49.0/sobjects/Account/';
 
-        Account account = [SELECT Name, AccountNumber, Phone, BillingAddress, ShippingAddress FROM Account WHERE Id = :id];
-        Account newAccount = new Account(
-            //BillingAddress, ShippingAddress
-            Name = account.Name,
-            AccountNumber = account.AccountNumber,
-            Phone = account.Phone
-        );
+        Account account = RestClient.getAccountById(id);
+        Account newAccount = RestClient.createAccount(account);
 
         String finalEndPoint = SEND_RECORD_ENDPOINT + 'MyExternal__c/' + id + '?_HttpMethod=PATCH';
 
@@ -43,5 +38,39 @@ public with sharing class RestClient {
         request.setHeader('Content-Type', 'application/json;charset=UTF-8');
         request.setBody(JSON.serialize(accountForUpdate)); 
         HttpResponse response = http.send(request);
+    }
+
+    public static Account getAccountById(Id id) {
+        Account account = [SELECT Name, AccountNumber, Phone, BillingStreet, 
+                                BillingCity, BillingCountry, BillingState, 
+                                BillingPostalCode, BillingLatitude, BillingLongitude, 
+                                ShippingStreet, ShippingCity, ShippingCountry, 
+                                ShippingState, ShippingPostalCode, ShippingLatitude, 
+                                ShippingLongitude, MyExternal__c
+                                FROM Account WHERE Id = :id];
+        return account;
+    }
+
+    public static Account createAccount(Account account) {
+        Account newAccount = new Account(
+            Name = account.Name,
+            AccountNumber = account.AccountNumber,
+            Phone = account.Phone,
+            BillingStreet = account.BillingStreet,
+            BillingCity = account.BillingCity,
+            BillingCountry = account.BillingCountry,
+            BillingState = account.BillingState,
+            BillingPostalCode = account.BillingPostalCode,
+            BillingLatitude = account.BillingLatitude,
+            BillingLongitude = account.BillingLongitude,
+            ShippingStreet = account.ShippingStreet,
+            ShippingCity = account.ShippingCity,
+            ShippingCountry = account.ShippingCountry,
+            ShippingState = account.ShippingState,
+            ShippingPostalCode = account.ShippingPostalCode,
+            ShippingLatitude = account.ShippingLatitude,
+            ShippingLongitude = account.ShippingLongitude
+        );
+        return newAccount;
     }
 }
