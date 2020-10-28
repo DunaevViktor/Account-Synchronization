@@ -26,18 +26,9 @@ trigger accountTrigger on Account (after insert, after update, before delete) {
                 idForDelete.add(account.Id);
             }
         }
-        
-        List<Account> accountForUpdate = new List<Account>();
-        
-        for (Account account : [SELECT Id, FromApi__c FROM Account WHERE Id IN :idForUpdate]) {
-            account.FromApi__c = false;
-            accountForUpdate.add(account);
-        }
-        
-        update accountForUpdate;
 
-        List<Account> accountForDelete = [SELECT Name FROM Account WHERE Id IN :idForDelete];
-        delete accountForDelete;
+        TriggerHelper.updateAccounts(idForUpdate);
+        TriggerHelper.deleteAccounts(idForDelete);
     } else if (Trigger.isDelete){
         for(Account account: Trigger.old) {
             if(account.MyExternal__c != null) {
