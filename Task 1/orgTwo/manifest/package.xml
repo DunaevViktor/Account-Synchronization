@@ -45,7 +45,6 @@
         <name>AuthProvider</name>
     </types>
     <types>
-        <members>Account.FromApi__c</members>
         <members>Account.MyExternal__c</members>
         <name>CustomField</name>
     </types>

@@ -1,14 +1,47 @@
 public with sharing class TriggerHelper {
-    public static void updateAccounts(List<Id> idForUpdate) {
-        if(idForUpdate.size() > 0) {
-            List<Account> accountForUpdate = new List<Account>();
+
+    public void syncUpdateAccount(Map<Id, Account> oldAccounts, Map<Id, Account> newAccounts){
+        Boolean isFromApi = String.valueOf(System.URL.getCurrentRequestUrl().getPath()).contains('composite');
         
-            for (Account account : [SELECT Id, FromApi__c FROM Account WHERE Id IN :idForUpdate]) {
-                account.FromApi__c = false;
-                accountForUpdate.add(account);
+        String[] compareFields = new String[]{
+            'Name', 'AccountNumber', 'Phone', 'BillingStreet',
+            'BillingCity', 'BillingCountry', 'BillingState', 'BillingPostalCode',
+            'BillingLatitude', 'BillingLongitude', 'ShippingStreet', 'ShippingCity', 
+            'ShippingCountry', 'ShippingState', 'ShippingPostalCode', 'ShippingLatitude', 
+            'ShippingLongitude'
+        };
+
+        Set<Id> accountIds = new Set<Id>();
+        for(Id accountId: newAccounts.keySet()){
+            Account oldAccount = oldAccounts.get(accountId);
+            Account newAccount = newAccounts.get(accountId);
+
+            if(!isFromApi) {
+                for(String field: compareFields) {
+                    if((String)newAccount.get(field) != (String)oldAccount.get(field)) {
+                        accountIds.add(accountId);
+                    }
+                }
             }
-            
-            update accountForUpdate;
+        }
+
+        if(!accountIds.isEmpty()){
+            List<Id> forUpdate = new List<Id>(accountIds);
+            RestClient.makeRequest(forUpdate);
+        }
+    }
+
+    public void syncInsertAccount(List<Account> newAccounts){
+        List<Id> needInsertRequestIds = new List<Id>();
+
+        for(Account account: newAccounts) {
+            if(account.MyExternal__c == null) {
+                needInsertRequestIds.add(account.id);
+            }
+        }
+
+        if(needInsertRequestIds.size() > 0) {
+            RestClient.makeRequest(needInsertRequestIds);
         }
     }
 

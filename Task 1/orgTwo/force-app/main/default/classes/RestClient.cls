@@ -68,7 +68,6 @@ public with sharing class RestClient {
             Name = account.Name,
             AccountNumber = account.AccountNumber,
             Phone = account.Phone,
-            FromApi__c = true,
             BillingStreet = account.BillingStreet,
             BillingCity = account.BillingCity,
             BillingCountry = account.BillingCountry,
