@@ -3,11 +3,9 @@ public with sharing class RestClient {
     @future(callout = true)
     public static void makeRequest(List<Id> ids) {
 
-        //String SEND_RECORD_ENDPOINT = 'callout:None9aApiNC/services/data/v49.0/sobjects/Account/';
         String SEND_RECORD_ENDPOINT = 'callout:None9aApiNC/services/data/v49.0/composite/sobjects/Account/';
 
         List<Account> accounts = RestClient.getAccountById(ids);
-        //Account newAccount = RestClient.createAccount(account);
         List<Account> newAccounts = new List<Account>();
         for(Account account: accounts){
             Account newAccount = RestClient.createAccount(account);
@@ -15,9 +13,7 @@ public with sharing class RestClient {
         }
 
         AccountCompositeRequest requestBody = new AccountCompositeRequest(newAccounts);
-        System.debug(requestBody);
 
-        //String finalEndPoint = SEND_RECORD_ENDPOINT + 'MyExternal__c/' + id + '?_HttpMethod=PATCH';
         String finalEndPoint = SEND_RECORD_ENDPOINT + 'MyExternal__c' + '?_HttpMethod=PATCH';
 
         Http http = new Http();
@@ -27,12 +23,7 @@ public with sharing class RestClient {
         request.setHeader('Content-Type', 'application/json;charset=UTF-8');
         request.setBody(JSON.serialize(requestBody));
         HttpResponse response = http.send(request);
-        System.debug(response.getBody());
-        
-        /*Map <String, Object> resultObject = (Map <String, Object>)JSON.deserializeUntyped(response.getBody());
-        String recordId = (String)resultObject.get('id');
-        account.MyExternal__c = recordId;
-        update account;  */
+
         List<AccountCompositeResponse> responseList = AccountCompositeResponse.parse(response.getBody()); 
         
         for(Account account: accounts){
@@ -42,7 +33,6 @@ public with sharing class RestClient {
         update accounts; 
     }
 
-    //bulkify for delete?
     //names
     @future(callout = true)
     public static void deleteRequest(List<String> externalIds) {
@@ -67,7 +57,7 @@ public with sharing class RestClient {
         HttpResponse response = http.send(request);
     }
 
-    public static List<Account> getAccountById(List<Id> ids) {
+    private static List<Account> getAccountById(List<Id> ids) {
         List<Account> account = [SELECT Name, AccountNumber, Phone, BillingStreet, 
                                 BillingCity, BillingCountry, BillingState, 
                                 BillingPostalCode, BillingLatitude, BillingLongitude, 
@@ -78,9 +68,8 @@ public with sharing class RestClient {
         return account;
     }
 
-    public static Account createAccount(Account account) {
+    private static Account createAccount(Account account) {
         Account newAccount = new Account(
-            //Id = account.MyExternal__c,
             MyExternal__c = account.Id,
             Name = account.Name,
             AccountNumber = account.AccountNumber,

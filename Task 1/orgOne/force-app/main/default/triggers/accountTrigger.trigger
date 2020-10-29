@@ -6,7 +6,6 @@ trigger accountTrigger on Account (after insert, after update, before delete) {
 
         for(Account account : Trigger.New) {
             if(account.MyExternal__c == null) {
-                //RestClient.makeRequest(account.id);
                 needInsertRequestIds.add(account.id);
             }
         }
@@ -16,21 +15,36 @@ trigger accountTrigger on Account (after insert, after update, before delete) {
         }
 
     } else if(Trigger.isUpdate){
+
+        String[] compareFields = new String[]{
+            'Name', 'AccountNumber', 'Phone', 'BillingStreet',
+            'BillingCity', 'BillingCountry', 'BillingState', 'BillingPostalCode',
+            'BillingLatitude', 'BillingLongitude', 'ShippingStreet', 'ShippingCity', 
+            'ShippingCountry', 'ShippingState', 'ShippingPostalCode', 'ShippingLatitude', 
+            'ShippingLongitude'
+        };
+
         List<Id> idForUpdate = new List<Id>();
         List<Id> idForDelete = new List<Id>();
         List<Id> needUpdateRequestIds = new List<Id>();
 
         for (Account account: Trigger.new) {
             Account oldAccount = Trigger.oldMap.get(account.Id);
+
+            Boolean isHaveChanges = false;
+
+            if(!account.FromApi__c) {
+                for(String field : compareFields) {
+                    if((String)account.get(field) != (String)oldAccount.get(field)) {
+                        isHaveChanges = true;
+                    }
+                }
         
-            //account.BillingAddress != oldAccount.BillingAddress
-            //account.ShippingAddress != account.ShippingAddress
-            if((account.Name != oldAccount.Name || account.AccountNumber != oldAccount.AccountNumber || 
-            account.Phone != oldAccount.Phone) && !account.FromApi__c) {
-                //RestClient.makeRequest(account.id);
-                needUpdateRequestIds.add(account.id);
-            } 
-        
+                if(isHaveChanges) {
+                    needUpdateRequestIds.add(account.id);
+                }
+            }
+                
             if(account.FromApi__c) {
                 idForUpdate.add(account.Id);
             }
@@ -51,11 +65,12 @@ trigger accountTrigger on Account (after insert, after update, before delete) {
 
         for(Account account: Trigger.old) {
             if(account.MyExternal__c != null) {
-                //RestClient.deleteRequest(account.MyExternal__c);
                 needDeleteRequestIds.add(account.MyExternal__c);
             }
         }
-        //if size>0?
-        RestClient.deleteRequest(needDeleteRequestIds);
+
+        if(needDeleteRequestIds.size() > 0) {
+            RestClient.deleteRequest(needDeleteRequestIds);
+        } 
     }
 }
