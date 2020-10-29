@@ -33,28 +33,22 @@ public with sharing class RestClient {
         update accounts; 
     }
 
-    //names
     @future(callout = true)
-    public static void deleteRequest(List<String> externalIds) {
+    public static void deleteRequest(List<Id> accountIds){
+        String finalEndPoint = 'callout:None63ApiNC/services/data/v50.0/composite/sobjects?ids=';
 
-        List<Account> accountsForUpdate = new List<Account>();
-        for (String id : externalIds) {
-            Account accountForUpdate = new Account(
-                Id = id,
-                MyExternal__c = null
-            );
-            accountsForUpdate.add(accountForUpdate);
+        for(Id accountId: accountIds){
+            finalEndPoint = finalEndpoint + accountId + ',';
         }
 
-        AccountRequestWrapper wrapper = new AccountRequestWrapper(false, accountsForUpdate);
+        finalEndPoint = finalEndPoint.removeEnd(',');
 
         Http http = new Http();
-        HttpRequest request = new HttpRequest();   
-        request.setEndpoint('callout:None63ApiNC/services/data/v49.0/composite/sobjects');  
-        request.setMethod('PATCH');    
-        request.setHeader('Content-Type', 'application/json;charset=UTF-8');
-        request.setBody(JSON.serialize(wrapper)); 
-        HttpResponse response = http.send(request);
+        HttpRequest request = new HttpRequest();
+        request.setEndpoint(finalEndPoint);
+        request.setMethod('DELETE');
+
+        HTTPResponse response = http.send(request);        
     }
 
     private static List<Account> getAccountById(List<Id> ids) {

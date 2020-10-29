@@ -1,5 +1,7 @@
 trigger accountTrigger on Account (after insert, after update, before delete) {
-    //names
+
+    TriggerHelper helper = new TriggerHelper();
+
     if(Trigger.isInsert){
 
         List<Id> needInsertRequestIds = new List<Id>();
@@ -25,7 +27,6 @@ trigger accountTrigger on Account (after insert, after update, before delete) {
         };
 
         List<Id> idForUpdate = new List<Id>();
-        List<Id> idForDelete = new List<Id>();
         List<Id> needUpdateRequestIds = new List<Id>();
         for (Account account: Trigger.new) {
             Account oldAccount = Trigger.oldMap.get(account.Id);
@@ -48,9 +49,6 @@ trigger accountTrigger on Account (after insert, after update, before delete) {
                 idForUpdate.add(account.Id);
             }
 
-            if(account.MyExternal__c == null) {
-                idForDelete.add(account.Id);
-            }
         }
 
         if(needUpdateRequestIds.size() > 0) {
@@ -58,18 +56,8 @@ trigger accountTrigger on Account (after insert, after update, before delete) {
         }
 
         TriggerHelper.updateAccounts(idForUpdate);
-        TriggerHelper.deleteAccounts(idForDelete);
+
     } else if (Trigger.isDelete){
-        List<String> needDeleteRequestIds = new List<String>();
-
-        for(Account account: Trigger.old) {
-            if(account.MyExternal__c != null) {
-                needDeleteRequestIds.add(account.MyExternal__c);
-            }
-        }
-
-        if(needDeleteRequestIds.size() > 0) {
-            RestClient.deleteRequest(needDeleteRequestIds);
-        }   
+        helper.syncDeleteAccount(Trigger.old);   
     }
 }
