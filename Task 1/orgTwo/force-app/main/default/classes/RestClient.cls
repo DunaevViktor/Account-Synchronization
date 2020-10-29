@@ -1,61 +1,89 @@
 public with sharing class RestClient {
     
     @future(callout = true)
-    public static void makeRequest(Id id) {
+    public static void makeRequest(List<Id> ids) {
 
-        String SEND_RECORD_ENDPOINT = 'callout:None63ApiNC/services/data/v49.0/sobjects/Account/';
+        //String SEND_RECORD_ENDPOINT = 'callout:None63ApiNC/services/data/v49.0/sobjects/Account/';
+        String SEND_RECORD_ENDPOINT = 'callout:None63ApiNC/services/data/v49.0/composite/sobjects/Account/';
 
-        Account account = RestClient.getAccountById(id);
-        Account newAccount = RestClient.createAccount(account);
+        List<Account> accounts = RestClient.getAccountById(ids);
+        //Account account = RestClient.getAccountById(id);
+        //Account newAccount = RestClient.createAccount(account);
+        List<Account> newAccounts = new List<Account>();
+        for(Account account: accounts){
+            Account newAccount = RestClient.createAccount(account);
+            newAccounts.add(newAccount);
+        }
 
-        String finalEndPoint = SEND_RECORD_ENDPOINT + 'MyExternal__c/' + id + '?_HttpMethod=PATCH';
+        AccountCompositeRequest requestBody = new AccountCompositeRequest(newAccounts);
+
+        //String finalEndPoint = SEND_RECORD_ENDPOINT + 'MyExternal__c/' + id + '?_HttpMethod=PATCH';
+        String finalEndPoint = SEND_RECORD_ENDPOINT + 'MyExternal__c' + '?_HttpMethod=PATCH';
 
         Http http = new Http();
         HttpRequest request = new HttpRequest();  
         request.setEndpoint(finalEndPoint); 
         request.setMethod('POST');  
         request.setHeader('Content-Type', 'application/json;charset=UTF-8');
-        request.setBody(JSON.serialize(newAccount));
+        request.setBody(JSON.serialize(requestBody));
         HttpResponse response = http.send(request);
 
-        Map <String, Object> resultObject = (Map <String, Object>)JSON.deserializeUntyped(response.getBody());
+        /*Map <String, Object> resultObject = (Map <String, Object>)JSON.deserializeUntyped(response.getBody());
         String recordId = (String)resultObject.get('id');
         account.MyExternal__c = recordId;
-        update account;
+        update account;*/
+        List<AccountCompositeResponse> responseList = AccountCompositeResponse.parse(response.getBody()); 
+        
+        for(Account account: accounts){
+            account.MyExternal__c = responseList.get(accounts.indexOf(account)).id;
+        }
+        
+        update accounts; 
     }
 
     @future(callout = true)
-    public static void deleteRequest(String externalId) {
+    public static void deleteRequest(List<String> externalIds) {
 
-        Account accountForUpdate = new Account(
-            MyExternal__c = null
-        );
+        List<Account> accountsForUpdate = new List<Account>();
+        for (String id : externalIds) {
+            Account accountForUpdate = new Account(
+                Id = id,
+                MyExternal__c = null
+            );
+            accountsForUpdate.add(accountForUpdate);
+        }
+
+        AccountRequestWrapper wrapper = new AccountRequestWrapper(false, accountsForUpdate);
 
         Http http = new Http();
         HttpRequest request = new HttpRequest();  
-        request.setEndpoint('callout:None63ApiNC/services/data/v49.0/sobjects/Account/' + externalId);  
+        //request.setEndpoint('callout:None63ApiNC/services/data/v49.0/sobjects/Account/' + externalId);  
+        request.setEndpoint('callout:None63ApiNC/services/data/v49.0/composite/sobjects');  
         request.setMethod('PATCH');    
         request.setHeader('Content-Type', 'application/json;charset=UTF-8');
-        request.setBody(JSON.serialize(accountForUpdate)); 
+        request.setBody(JSON.serialize(wrapper)); 
         HttpResponse response = http.send(request);
     }
 
-    public static Account getAccountById(Id id) {
-        Account account = [SELECT Name, AccountNumber, Phone, BillingStreet, 
+    public static List<Account> getAccountById(List<Id> ids) {
+        List<Account> account = [SELECT Name, AccountNumber, Phone, BillingStreet, 
                                 BillingCity, BillingCountry, BillingState, 
                                 BillingPostalCode, BillingLatitude, BillingLongitude, 
                                 ShippingStreet, ShippingCity, ShippingCountry, 
                                 ShippingState, ShippingPostalCode, ShippingLatitude, 
                                 ShippingLongitude, MyExternal__c
-                                FROM Account WHERE Id = :id];
+                                FROM Account WHERE Id = :ids];
         return account;
     }
 
     public static Account createAccount(Account account) {
         Account newAccount = new Account(
+            //Id = account.MyExternal__c,
+            MyExternal__c = account.Id,
             Name = account.Name,
             AccountNumber = account.AccountNumber,
             Phone = account.Phone,
+            FromApi__c = true,
             BillingStreet = account.BillingStreet,
             BillingCity = account.BillingCity,
             BillingCountry = account.BillingCountry,
