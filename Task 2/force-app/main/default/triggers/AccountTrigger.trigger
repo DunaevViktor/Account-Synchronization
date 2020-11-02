@@ -1,13 +1,16 @@
 trigger AccountTrigger on Account (after update) {
-        List<Id> accountsId = new List<Id>();
+    //after insert,
+    //if it means the possibility of creating an account with the CreatePDF__c=true
+    List<Id> accountsId = new List<Id>();
 
-        for (Account account : Trigger.new) {
-            if(account.CreatePDF__c) {
-                accountsId.add(account.Id);
-            }
+    for (Account account : Trigger.new) {
+        if(account.CreatePDF__c) {
+            accountsId.add(account.Id);
         }
+    }
     
-        if(accountsId.size() > 0) {
-            TriggerHelper.createPDF(accountsId);
-        }
+    if(accountsId.size() > 0) {
+        TriggerHelper generatingJob = new TriggerHelper(accountsId);
+        ID jobID = System.enqueueJob(generatingJob);
+    }
 }

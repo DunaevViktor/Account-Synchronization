@@ -6,3 +6,5 @@
 4. PDF should include:
     * Account info: Name, Phone, Billing and Shipping Addresses.
     * List of related Contacts: First Name, Last Name, Email, Phone and Address.
+5. Create the button, which will work with logic of generating PDF.
+6. Use LWC.

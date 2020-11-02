@@ -26,13 +26,18 @@ private class TestCreatePDF {
 
     @isTest
     public static void testCreatePdf(){
-        Account account = [SELECT Id, CreatePDF__c FROM Account LIMIT 1];
+        List<Account> accounts = [SELECT Id, CreatePDF__c FROM Account];
+        List<Id> accountIds = new List<Id>();
+        for(Account acc: accounts){
+            accountIds.add(acc.Id);
+        }
 
         Test.startTest();
-        TriggerHelper.savePDF(account.Id);
+        TriggerHelper generatingJob = new TriggerHelper(accountIds);
+        ID jobID = System.enqueueJob(generatingJob);
         Test.stopTest(); 
     
-        List<Attachment> attachments = [SELECT Id FROM Attachment WHERE ParentId = :account.id];
+        List<Attachment> attachments = [SELECT Id FROM Attachment WHERE ParentId = :accounts[0].id];
         System.assertEquals(1, attachments.size(), IVALID_ATTACHMENTS_AMOUNT);
     }
 }

@@ -1,18 +1,23 @@
-public with sharing class TriggerHelper {
+public with sharing class TriggerHelper implements Queueable, Database.AllowsCallouts{
 
-    @future(callout=true)
-    public static void createPDF(List<Id> Ids) {
+    private List<Id> ids;
+
+    public TriggerHelper(List<Id> ids) {
+        this.ids = ids;
+    }
+
+    public void execute(QueueableContext context) {
         List<Account> accounts = [SELECT Id,  CreatePDF__c FROM Account WHERE Id IN :Ids];
 
         for (Account account : accounts) {
             account.CreatePDF__c = false;
-            savePDF(account.id);
+            this.savePDF(account.id);
         }
 
         update accounts;
     }
 
-    public static void savePDF(Id id) {
+    public void savePDF(Id id) {
         Pagereference pdf = Page.AccountPage;
         pdf.getParameters().put('id', id);
     

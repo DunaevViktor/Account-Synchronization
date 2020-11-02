@@ -1,0 +1,3 @@
+<aura:component implements="force:lightningQuickActionWithoutHeader,force:hasRecordId">
+    <c:createPDF recordId="{!v.recordId}"/>
+</aura:component>	
