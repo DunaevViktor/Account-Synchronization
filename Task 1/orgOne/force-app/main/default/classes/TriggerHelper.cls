@@ -27,7 +27,8 @@ public with sharing class TriggerHelper {
 
         if(!accountIds.isEmpty()){
             List<Id> forUpdate = new List<Id>(accountIds);
-            RestClient.makeRequest(forUpdate);
+            upsertCallout integrationJob = new upsertCallout(forUpdate);
+            ID jobID = System.enqueueJob(integrationJob);
         }
     }
 
@@ -41,7 +42,8 @@ public with sharing class TriggerHelper {
         }
 
         if(needInsertRequestIds.size() > 0) {
-            RestClient.makeRequest(needInsertRequestIds);
+            upsertCallout integrationJob = new upsertCallout(needInsertRequestIds);
+            ID jobID = System.enqueueJob(integrationJob);
         }
     }
 
@@ -55,7 +57,8 @@ public with sharing class TriggerHelper {
             }
         } 
         if(!accountIds.isEmpty()){
-            RestClient.deleteRequest(accountIds);
+            deleteCallout integrationJob = new deleteCallout(accountIds);
+            ID jobID = System.enqueueJob(integrationJob);
         }
     }
 }

@@ -1,14 +1,17 @@
-public with sharing class RestClient {
-    
-    @future(callout = true)
-    public static void makeRequest(List<Id> ids) {
+public with sharing class upsertCallout implements Queueable, Database.AllowsCallouts {
+    private List<Id> ids;
 
+    public upsertCallout(List<Id> ids) {
+        this.ids = ids;
+    }
+
+    public void execute(QueueableContext context) {
         String SEND_RECORD_ENDPOINT = 'callout:None9aApiNC/services/data/v49.0/composite/sobjects/Account/';
 
-        List<Account> accounts = RestClient.getAccountById(ids);
+        List<Account> accounts = this.getAccountById(ids);
         List<Account> newAccounts = new List<Account>();
         for(Account account: accounts){
-            Account newAccount = RestClient.createAccount(account);
+            Account newAccount = this.createAccount(account);
             newAccounts.add(newAccount);
         }
 
@@ -30,28 +33,10 @@ public with sharing class RestClient {
             account.MyExternal__c = responseList.get(accounts.indexOf(account)).id;
         }
         
-        update accounts; 
+        update accounts;
     }
 
-    @future(callout = true)
-    public static void deleteRequest(List<Id> accountIds){
-        String finalEndPoint = 'callout:None9aApiNC/services/data/v50.0/composite/sobjects?ids=';
-
-        for(Id accountId: accountIds){
-            finalEndPoint = finalEndpoint + accountId + ',';
-        }
-
-        finalEndPoint = finalEndPoint.removeEnd(',');
-
-        Http http = new Http();
-        HttpRequest request = new HttpRequest();
-        request.setEndpoint(finalEndPoint);
-        request.setMethod('DELETE');
-
-        HTTPResponse response = http.send(request);        
-    }
-
-    private static List<Account> getAccountById(List<Id> ids) {
+    private List<Account> getAccountById(List<Id> ids) {
         List<Account> account = [SELECT Name, AccountNumber, Phone, BillingStreet, 
                                 BillingCity, BillingCountry, BillingState, 
                                 BillingPostalCode, BillingLatitude, BillingLongitude, 
@@ -62,7 +47,7 @@ public with sharing class RestClient {
         return account;
     }
 
-    private static Account createAccount(Account account) {
+    private Account createAccount(Account account) {
         Account newAccount = new Account(
             MyExternal__c = account.Id,
             Name = account.Name,
